@@ -76,3 +76,48 @@ form_clock_footer_button_save.addEventListener("click", () => {
 
 let cycle_title = document.querySelector(".cycle_card_plus");
 cycle_title.addEventListener("click", newCard_CycleContainer);
+
+
+
+document.addEventListener("DOMContentLoaded", () =>{
+  const datosGuardados = localStorage.getItem("cycles");
+  const clockDisplay = document.querySelector(".clock_timer_main");
+
+  if(!datosGuardados){
+    // Esto lo que hace es que si el ciclo por defecto esta vacio guarda un ciclo por defecto en este caso es una repeticion de 25 minutos
+    const cicloPorDefecto = {
+      repeat: 1,
+      cycle: [1500],
+      alarmType: 2
+    };
+    localStorage.setItem("cycles", JSON.stringify(cicloPorDefecto));
+    if(clockDisplay){
+      clockDisplay.textContent = "00:25:00";
+    }
+  }else{
+      const data = JSON.parse(datosGuardados);
+      if(data.cycle && data.cycle.length > 0 && clockDisplay){
+        clockDisplay.textContent = secondsToHHMMSS(data.cycle[0]);
+      }
+    }
+
+    const alarmSlider = document.querySelector("#alarm_mood");
+    if(alarmSlider){
+      alarmSlider.addEventListener("input", (e) =>{
+        const valorNumerico = Number(e.target.value);
+
+        document.querySelectorAll(".alarm_labels span").forEach(s => s.classList.remove("active_mood"));
+        if(valorNumerico === 1){
+          document.querySelector("#label_zen")?.classList.add("active_mood");
+        }else if(valorNumerico === 2){
+          document.querySelector("#label_active")?.classList.add("active_mood");
+        }else if(valorNumerico === 3){
+          document.querySelector("#label_alert")?.classList.add("active_mood");
+        }
+
+        if(typeof reproducirVistaPreviaAlarma === "function"){
+          reproducirVistaPreviaAlarma(valorNumerico);
+        }
+      });
+    }
+});
