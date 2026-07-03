@@ -27,14 +27,14 @@ export async function run_clock() {
     }
   }
 }
-
+let intervalo;
 export function run_timer(seconds) {
   let clock = document.querySelector(".clock_timer_main");
 
   return new Promise((resolve) => {
     let time = seconds;
 
-    const intervalo = setInterval(() => {
+    intervalo = setInterval(() => {
       if (time <= 0) {
         clock.textContent = `00:00:00`;
         clearInterval(intervalo);
@@ -50,6 +50,6 @@ export function localStorage_cycles() {
   console.log(localStorage.getItem("cycles"));
 }
 
-function pause_clock() {
+export function stop_clock() {
   clearInterval(intervalo);
 }
