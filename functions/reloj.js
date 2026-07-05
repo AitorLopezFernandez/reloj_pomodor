@@ -7,13 +7,24 @@ export function mostrar_configuracion() {
 }
 
 export function restart_clock() {
-  const clock_localStorage = {
-    repeat: 0,
-    cycle: [],
-  };
-  localStorage.setItem("cycles", JSON.stringify(clock_localStorage));
+
+  stop_clock(); // Detenemos el intervalo para que no siga con la marcha atras
+
+  // Con la variable datos guardados realizamos la lectura de la configuracion actual que el usuario guardo previamente
+  const datosGuardados = localStorage.getItem("cycles")
   let clock = document.querySelector(".clock_timer_main");
-  clock.textContent = "00:00:00";
+
+  if(datosGuardados){
+    const data = JSON.parse(datosGuardados);
+
+    if(data.cycle && data.cycle.length > 0){
+      clock.textContent = secondsToHHMMSS(data.cycle[0]);
+    }else{
+      clock.textContent = "00:00:00";
+    }
+  }else{
+    clock.textContent = "00:00:00";
+  }
 }
 
 export async function run_clock() {
