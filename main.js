@@ -4,7 +4,9 @@ import {
   restart_clock,
   run_clock,
   run_timer,
-  stop_clock
+  stop_clock,
+  habilitarAudios,
+  reproducirVistaPreviaAlarma
 } from "./functions/reloj.js";
 import {
   newCard_CycleContainer,
@@ -13,6 +15,7 @@ import {
   save_form_configuration,
 } from "./functions/form_configuration.js";
 import { secondsToHHMMSS } from "./utils/time.js";
+
 
 const buttons_clock = [
   {
@@ -31,7 +34,11 @@ const buttons_clock = [
     text: "Iniciar",
     iconClass: "bi bi-play-fill",
     color: "#22C55E",
-    accion: { type: "click", function: run_clock },
+    accion: { type: "click", function: () => {
+      habilitarAudios();
+      run_clock();
+    }
+  },
   },
   {
     text: "parar",
@@ -70,6 +77,8 @@ let form_clock_footer_button_save = document.querySelector(
 form_clock_footer_button_save.addEventListener("click", () => {
   ocultar_configuracion();
   save_form_configuration();
+
+  habilitarAudios();
   run_clock();
   console.log(localStorage.getItem("cycles"));
 });

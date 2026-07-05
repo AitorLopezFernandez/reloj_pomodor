@@ -47,7 +47,7 @@ export function run_timer(seconds) {
 
         if(datosGuardados){
           const data = JSON.parse(datosGuardados);
-          if(data.tipoAlarma !== undefined){
+          if(data.alarmType !== undefined){
             tipoAlarma = Number(data.alarmType);
           }
         }
@@ -63,49 +63,64 @@ export function run_timer(seconds) {
   });
 }
 
+// Instancias de los archivos MP3
+const pistasAlarma = {
+  1: new Audio ('sounds/zen.mp3'),
+  2: new Audio ('sounds/normal.mp3'),
+  3: new Audio ('sounds/fuerte.mp3')
+};
+
 // Aqui abajo añadimos una funcion asistente/coopera a la que ya esta realizando el conteo hacia atras que se encargara
 // de añadir el audio de la alarma
 function ejecutarAlarmaInmersiva(tipo, elementoBody) {
-  const audioCtx = new (window.AudioContext || window.WebkitAudioContext)();
-  const osc = audioCtx.createOscillator();
-  const gainNode = audioCtx.createGain();
+  // Reseteamos cualquier pista de audio la cual estubiera sonando previamente
+  Object.values(pistasAlarma).forEach(audio => {
+    audio.pause(); // Aqui detenemos la pista de audio
+    audio.currentTime = 0;
+  });
 
-  osc.connect(gainNode);
-  gainNode.connect(audioCtx.destination);
+  // Aqui obtenemos la pista de audio correspondiente
+  const audioSeleccionado = pistasAlarma[tipo] || pistasAlarma[2];
+
+  // Reproduciremos el archivo mp3
+  audioSeleccionado.play().catch(error => {
+    console.log("La reproduccion de audio fue bloqueada por el navegador hasta una interaccion del usuario. ", error);
+  });
 
   if(tipo === 1){
-    //Modo Zen: Frecuencia profunda expansiva + destello violeta lento en pantalla
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(140, audioCtx.currentTime);
-    gainNode.gain.setValueAtTime(0.6, audioCtx.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 3); // Esto realizara un eco largo
-
     elementoBody.classList.add("flash-zen");
     setTimeout(() => elementoBody.classList.remove("flash-zen"), 4000);
-
-    osc.start();
-    osc.stop(audioCtx.currentTime + 3);
   }else if(tipo === 3){
-    //Modo Alerta Maxima: Sonido ritmico aserrado + rafagas rojas
-    osc.type = 'sawtooth';
-    osc.frequency.setValueAtTime(840, audioCtx.currentTime);
-    gainNode.gain.setValueAtTime(0.25, audioCtx.currentTime);
-
     elementoBody.classList.add("flash-alert");
     setTimeout(() => elementoBody.classList.remove("flash-alert"), 2500);
-
-    osc.start();
-    osc.stop(audioCtx.currentTime + 1.8);
-  }else{
-    // Modo Activo: Campana armonica estandar
-    osc.type = "triangle";
-    osc.frequency.setValueAtTime(440, audioCtx.currentTime);
-    gainNode.gain.setValueAtTime(0.4, audioCtx.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1);
-
-    osc.start();
-    osc.stop(audioCtx.currentTime + 1);
   }
+}
+
+export function reproducirVistaPreviaAlarma(tipo){
+  Object.values(pistasAlarma).forEach(audio => {
+    audio.pause();
+    audio.currentTime = 0;
+  });
+
+  const audioVistaPrevia = pistasAlarma[tipo] || pistasAlarma[2];
+
+  audioVistaPrevia.play().catch(e => console.log("Bloqueo de audio: ", e));
+
+  setTimeout(() => {
+    if(document.querySelector(".overlay").style.display === "flex"){
+      audioVistaPrevia.pause();
+      audioVistaPrevia.currentTime = 0;
+    }
+  }, 1500);
+}
+
+export function habilitarAudios(){
+  Object.values(pistasAlarma).forEach(audio => {
+    audio.play().then(() => {
+      audio.pause();
+      audio.currentTime = 0;
+    }).catch(e => console.log("Audios listos para reproducirse mas tarde."));
+  });
 }
 
 export function localStorage_cycles() {
